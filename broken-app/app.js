@@ -1,30 +1,34 @@
 const express = require('express');
-let axios = require('axios');
-var app = express();
+const axios = require('axios');
+const ExpressError = require('./expressError');
+const app = express();
 
-//take in a JSON body (Github usernames)
+//take in a JSON body (Github usernames) > convert it into an array first
 //should return {name, bio}
-//
+//JSON.parse
 
+app.use(express.json());
 
-app.post('/', function(req, res, next) {
-  try {
-    let results = req.body.developers.map(async d => {
-      return await axios.get(`https://api.github.com/users/${d}`);
-    });
-    let out = results.map(r => ({ name: r.data.name, bio: r.data.bio }));
+app.post('/', async function(req, res, next) {
+	try {
+		let results = [];
 
-    return res.send(JSON.stringify(out));
-  } catch {
-    next(err);
-  }
+		for (let dev of req.body.developers) {
+			let resp = await axios.get(` https://api.github.com/users/${dev}`);
+			results.push(resp);
+		}
+			let out = results.map((r) => ({ name: r.data.name, bio: r.data.bio }));
+		return res.send(JSON.stringify(out));
+	} catch (err) {
+		return next(err);
+	}
 });
 
 
 // 404 handler
 app.use(function (req, res, next) {
   const notFoundError = new ExpressError("Not Found", 404);
-  return next(notFoundError)
+  return next(notFoundError);
 });
 
 // end generic handler
@@ -35,4 +39,6 @@ app.listen(3000, function (err) {
     console.log(`Server starting on port 3000`);
   }
 });
+
+module.exports = app;
 
