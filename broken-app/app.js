@@ -11,13 +11,13 @@ app.use(express.json());
 
 app.post('/', async function(req, res, next) {
 	try {
-		let results = [];
+		const results = [];
 
 		for (let dev of req.body.developers) {
-			let resp = await axios.get(` https://api.github.com/users/${dev}`);
+			const resp = await axios.get(` https://api.github.com/users/${dev}`);
 			results.push(resp);
 		}
-			let out = results.map((r) => ({ name: r.data.name, bio: r.data.bio }));
+			const out = results.map((r) => ({ name: r.data.name, bio: r.data.bio }));
 		return res.send(JSON.stringify(out));
 	} catch (err) {
 		return next(err);
